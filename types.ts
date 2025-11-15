@@ -1,3 +1,5 @@
+import { Epsilon, Z } from "./constants";
+
 export enum States {
   q0 = "q0",
   q1 = "q1",
@@ -11,22 +13,18 @@ export enum AlphabetSymbols {
 export enum StackMovement {
   POP = "POP",
   PUSH = "PUSH",
-  SET_Z = "SET_Z",
+  NONE = "NONE",
+  REPLACE = "REPLACE",
 }
 
 export type StackSymbolsType = AlphabetSymbols.zero | "z";
 
 export interface Transition {
   from: States;
-  symbolOnLine: AlphabetSymbols;
+  symbolOnLine: AlphabetSymbols | typeof Epsilon | typeof Z;
   symbolOnStack: StackSymbolsType;
   endState: States;
   stackMovement: StackMovement;
 }
 
-export interface LastTransition extends Transition {
-  endState: States.q1;
-  stackMovement: StackMovement.SET_Z;
-}
-
-export type TransitionsLine = [...Transition[], LastTransition];
+export type TransitionsLine = Transition[];

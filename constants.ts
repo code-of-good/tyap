@@ -1,6 +1,7 @@
 import { AlphabetSymbols, States, StackSymbolsType } from "./types";
 
 export const Z = "z";
+export const Epsilon = "λ";
 
 export const StartState = States.q0;
 export const StartStackSymbol = Z;
