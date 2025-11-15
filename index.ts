@@ -26,15 +26,21 @@ const main = () => {
   };
 
   const line = [...textLine];
+  let i = 0;
+  while (i < line.length) {
+    const symbol = line[i];
 
-  for (const symbol of line) {
     const stateNow = transitions.find(
       ({ from, symbolOnLine, symbolOnStack }) =>
         from === currentState &&
         symbolOnLine === symbol &&
         stack.getTop() === symbolOnStack
     );
+
     if (!stateNow) {
+      console.log(
+        `Ошибка в символе  ${i} - ${symbol}, нет перехода, удовлетворяющего состоянию и символу, завершаем программу`
+      );
       return;
     }
 
@@ -47,10 +53,16 @@ const main = () => {
     }
 
     movementMethods[stateNow.stackMovement](stateNow.symbolOnLine);
-    console.log(stateNow, stack.getStackText(), symbol);
 
+    if (stateNow.stackMovement !== StackMovement.NONE) {
+      i++;
+    }
     currentState = stateNow.endState;
   }
+  console.log(
+    "Программа завершена успешно, длина стека: ",
+    stack.getStackText().length
+  );
 };
 
 main();

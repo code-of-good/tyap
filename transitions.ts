@@ -53,7 +53,7 @@ export const transitions: TransitionsLine = [
     symbolOnLine: Epsilon,
     symbolOnStack: Z,
     endState: States.q0,
-    stackMovement: StackMovement.REPLACE,
+    stackMovement: StackMovement.POP,
   },
 
   // δ(q₁,λ,Z)={(q₀,Z)}
@@ -62,6 +62,6 @@ export const transitions: TransitionsLine = [
     symbolOnLine: Epsilon,
     symbolOnStack: Z,
     endState: States.q0,
-    stackMovement: StackMovement.REPLACE,
+    stackMovement: StackMovement.NONE,
   },
 ];
