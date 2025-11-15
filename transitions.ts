@@ -1,11 +1,10 @@
 import {
-  StackSymbols,
   AlphabetSymbols,
   States,
-  Transition,
   StackMovement,
   TransitionsLine,
 } from "./types";
+import { Z } from "./constants";
 
 export const textLine: AlphabetSymbols[] = [
   AlphabetSymbols.zero,
@@ -18,14 +17,14 @@ export const transitions: TransitionsLine = [
   {
     from: States.q0,
     symbolOnLine: AlphabetSymbols.zero,
-    symbolOnStack: StackSymbols.z,
+    symbolOnStack: Z,
     endState: States.q0,
     stackMovement: StackMovement.PUSH,
   },
   {
     from: States.q0,
     symbolOnLine: AlphabetSymbols.zero,
-    symbolOnStack: StackSymbols.z,
+    symbolOnStack: Z,
     endState: States.q1,
     stackMovement: StackMovement.SET_Z,
   },

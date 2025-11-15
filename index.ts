@@ -1,6 +1,8 @@
 import { Stack } from "./structures";
 import { textLine, transitions } from "./transitions";
-import { StackMovement, StackSymbols, StartState, States } from "./types";
+import { StackMovement, StackSymbolsType } from "./types";
+import { StartState } from "./constants";
+import { isStackSymbol } from "./utils";
 
 type MovementsObjectInterface = Record<StackMovement, any>;
 
@@ -13,7 +15,7 @@ const main = () => {
   //   Тут делаем методы для движения, что обрабатывать соббытия в стеке
   const movementMethods: MovementsObjectInterface = {
     [StackMovement.POP]: () => stack.pop(),
-    [StackMovement.PUSH]: (val: StackSymbols) => {
+    [StackMovement.PUSH]: (val: StackSymbolsType) => {
       stack.push(val);
     },
     [StackMovement.SET_Z]: () => stack.setZ(),
@@ -31,9 +33,17 @@ const main = () => {
     if (!stateNow) {
       return;
     }
+
+    if (
+      stateNow.stackMovement === StackMovement.PUSH &&
+      !isStackSymbol(stateNow.symbolOnLine)
+    ) {
+      console.log("Ошибка, пытаемся запушить символ не из алфавита стека");
+      return;
+    }
     movementMethods[stateNow.stackMovement](stateNow.symbolOnLine);
     currentState = stateNow.endState;
-    console.log(stack.getStackText());
+    stack.getStackText();
   }
 };
 

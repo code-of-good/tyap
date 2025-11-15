@@ -1,9 +1,10 @@
-import { StackSymbols } from "./types";
+import { StackSymbolsType } from "./types";
+import { Z } from "./constants";
 
 export class Stack {
-  private items: StackSymbols[] = [StackSymbols.z];
+  private items: StackSymbolsType[] = [Z];
 
-  push(item: StackSymbols) {
+  push(item: StackSymbolsType) {
     this.items.push(item);
   }
 
@@ -12,7 +13,7 @@ export class Stack {
   }
 
   setZ() {
-    return this.items.push(StackSymbols.z);
+    return this.items.push(Z);
   }
 
   getTop() {
