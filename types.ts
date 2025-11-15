@@ -1,28 +1,29 @@
-enum States {
+export enum States {
   q0 = "q0",
   q1 = "q1",
 }
 
-enum AlphabetSymbols {
+export enum AlphabetSymbols {
   zero = "0",
   one = "1",
 }
 
-enum StackSymbols {
+export enum StackSymbols {
   z = "z",
   zero = "0",
 }
 
-const StartState = States.q0;
-const StartStackSymbol = StackSymbols.z;
-const EndState = States.q0;
+export const StartState = States.q0;
+export const StartStackSymbol = StackSymbols.z;
+export const EndState = States.q0;
 
-enum StackMovement {
-  pop = "pop",
-  push = "push",
+export enum StackMovement {
+  POP = "POP",
+  PUSH = "PUSH",
+  SET_Z = "SET_Z",
 }
 
-interface Transition {
+export interface Transition {
   from: States;
   symbolOnLine: AlphabetSymbols;
   symbolOnStack: StackSymbols;
@@ -30,12 +31,9 @@ interface Transition {
   stackMovement: StackMovement;
 }
 
-const transitions: Transition[] = [
-  {
-    from: States.q0,
-    symbolOnLine: AlphabetSymbols.zero,
-    symbolOnStack: StackSymbols.z,
-    endState: States.q0,
-    stackMovement: StackMovement.push,
-  },
-];
+export interface LastTransition extends Transition {
+  endState: States.q1;
+  stackMovement: StackMovement.SET_Z;
+}
+
+export type TransitionsLine = [...Transition[], LastTransition];
