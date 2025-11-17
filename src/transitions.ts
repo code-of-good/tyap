@@ -1,10 +1,6 @@
-import {
-  AlphabetSymbols,
-  States,
-  StackMovement,
-  TransitionsLine,
-} from "./types";
-import { Epsilon, Z } from "./constants";
+import { StackMovement, TransitionsLine } from "./types";
+import { AlphabetSymbols, States, Z } from "./language";
+import { Epsilon } from "./constants";
 
 export const textLine: (AlphabetSymbols | typeof Epsilon)[] = [
   AlphabetSymbols.zero,
@@ -65,3 +61,4 @@ export const transitions: TransitionsLine = [
     stackMovement: StackMovement.NONE,
   },
 ];
+

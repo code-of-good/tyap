@@ -1,7 +1,7 @@
 import { Stack } from "./structures";
 import { textLine, transitions } from "./transitions";
 import { StackMovement, StackSymbolsType } from "./types";
-import { StartState } from "./constants";
+import { StartState } from "./language";
 import { isStackSymbol, isSymbol } from "./utils";
 
 type MovementsObjectInterface = Record<StackMovement, any>;
@@ -66,3 +66,4 @@ const main = () => {
 };
 
 main();
+

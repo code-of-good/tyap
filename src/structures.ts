@@ -1,5 +1,4 @@
-import { StackSymbolsType } from "./types";
-import { Z } from "./constants";
+import { StackSymbolsType, Z } from "./language";
 
 export class Stack {
   private items: StackSymbolsType[] = [Z];
@@ -28,3 +27,4 @@ export class Stack {
     return this.items.join("");
   }
 }
+

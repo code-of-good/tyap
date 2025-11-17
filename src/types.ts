@@ -1,14 +1,5 @@
-import { Epsilon, Z } from "./constants";
-
-export enum States {
-  q0 = "q0",
-  q1 = "q1",
-}
-
-export enum AlphabetSymbols {
-  zero = "0",
-  one = "1",
-}
+import { Epsilon } from "./constants";
+import { Z, States, AlphabetSymbols } from "./language";
 
 export enum StackMovement {
   POP = "POP",
@@ -17,7 +8,7 @@ export enum StackMovement {
   REPLACE = "REPLACE",
 }
 
-export type StackSymbolsType = AlphabetSymbols.zero | "z";
+export type StackSymbolsType = AlphabetSymbols.zero | typeof Z;
 
 export interface Transition {
   from: States;
@@ -28,3 +19,4 @@ export interface Transition {
 }
 
 export type TransitionsLine = Transition[];
+
