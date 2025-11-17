@@ -12,16 +12,10 @@ export enum States {
 export enum AlphabetSymbols {
   a = "a",
   b = "b",
-  c = "c",
 }
 
 export const StartState = States.q0;
 export const StartStackSymbol = Z;
-export const EndState = States.q2;
+export const EndState = States.q1;
 
-export const StackSybmols = [
-  AlphabetSymbols.a,
-  AlphabetSymbols.b,
-  AlphabetSymbols.c,
-  Z,
-] as const;
+export const StackSybmols = [AlphabetSymbols.a, AlphabetSymbols.b, Z] as const;

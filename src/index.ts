@@ -1,8 +1,8 @@
 import { join } from "path";
 import { Stack } from "./structures";
 import { transitions } from "./transitions";
-import { StackMovement, StackSymbolsType, Transition } from "./types";
-import { StartState, AlphabetSymbols, Z } from "./language";
+import { StackMovement, Transition, TupleToUnion } from "./types";
+import { StartState, AlphabetSymbols, Z, StackSybmols } from "./language";
 import { isStackSymbol, isSymbol } from "./utils";
 import { readFileSync } from "fs";
 import { Lambda } from "./constants";
@@ -18,11 +18,11 @@ const main = () => {
   //   Тут делаем методы для движения, что обрабатывать соббытия в стеке
   const movementMethods: MovementsObjectInterface = {
     [StackMovement.POP]: () => stack.pop(),
-    [StackMovement.PUSH]: (val: StackSymbolsType) => {
+    [StackMovement.PUSH]: (val: TupleToUnion<typeof StackSybmols>) => {
       stack.push(val);
     },
     [StackMovement.NONE]: () => {},
-    [StackMovement.REPLACE]: (val: StackSymbolsType) => {
+    [StackMovement.REPLACE]: (val: TupleToUnion<typeof StackSybmols>) => {
       stack.pop();
       stack.push(val);
     },
@@ -33,6 +33,7 @@ const main = () => {
   const textContent = readFileSync(textFilePath, "utf-8").trim();
   // Преобразуем строку в массив символов
   const line: string[] = [...textContent.split(""), Lambda];
+  let position = 0;
   for (const symbol of line) {
     const stateNow = transitions.find(
       ({ from, symbolOnLine, symbolOnStack }) =>
@@ -43,6 +44,7 @@ const main = () => {
 
     if (!stateNow) {
       console.log(
+        `Текущее состояние: ${currentState}, текущий символ: ${symbol}, текущий символ на стеке: ${stack.peek()}, позиция в строке: ${position}`,
         `Ошибка в символе  ${symbol}, нет перехода, удовлетворяющего состоянию и символу, завершаем программу`
       );
       return;
@@ -59,6 +61,7 @@ const main = () => {
     movementMethods[stateNow.stackMovement](stateNow.symbolOnLine);
 
     currentState = stateNow.endState;
+    position++;
   }
   console.log(
     "Программа завершена успешно, длина стека: ",
