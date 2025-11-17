@@ -1,9 +1,10 @@
-import { StackSymbolsType, Z } from "./language";
+import { StackSybmols, Z } from "./language";
+import { TupleToUnion } from "./types";
 
 export class Stack {
-  private items: StackSymbolsType[] = [Z];
+  private items: TupleToUnion<typeof StackSybmols>[] = [Z];
 
-  push(item: StackSymbolsType) {
+  push(item: TupleToUnion<typeof StackSybmols>) {
     this.items.push(item);
   }
 
@@ -11,11 +12,7 @@ export class Stack {
     return this.items.pop();
   }
 
-  setZ() {
-    return this.items.push(Z);
-  }
-
-  getTop() {
+  peek() {
     return this.items[this.items.length - 1];
   }
 
@@ -27,4 +24,3 @@ export class Stack {
     return this.items.join("");
   }
 }
-

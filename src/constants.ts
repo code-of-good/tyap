@@ -1,2 +1,1 @@
-export const Epsilon = "λ";
-
+export const Lambda = "λ";

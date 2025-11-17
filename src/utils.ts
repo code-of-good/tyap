@@ -1,18 +1,13 @@
-import {
-  AlphabetSymbols,
-  StackSymbolsType,
-  Z,
-  StackSybmolsArray,
-} from "./language";
-import { Epsilon } from "./constants";
+import { AlphabetSymbols, Z, StackSybmols } from "./language";
+import { Lambda } from "./constants";
+import { TupleToUnion } from "./types";
 
 export const isStackSymbol = (symbol: AlphabetSymbols): boolean => {
-  return StackSybmolsArray.includes(symbol as StackSymbolsType);
+  return StackSybmols.includes(symbol as TupleToUnion<typeof StackSybmols>);
 };
 
 export const isSymbol = (
-  symbol: AlphabetSymbols | typeof Epsilon | typeof Z
+  symbol: AlphabetSymbols | typeof Lambda | typeof Z
 ): symbol is AlphabetSymbols => {
-  return symbol !== Z && symbol !== Epsilon;
+  return symbol !== Z && symbol !== Lambda;
 };
-

@@ -8,11 +8,12 @@
     "dev": "ts-node src/index.ts"
   },
   "devDependencies": {
-    "@types/node": "^20.10.6",
+    "@types/node": "^24.10.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },
-  "packageManager": "yarn@4.9.4+sha512.7b1cb0b62abba6a537b3a2ce00811a843bea02bcf53138581a6ae5b1bf563f734872bd47de49ce32a9ca9dcaff995aa789577ffb16811da7c603dcf69e73750b"
+  "packageManager": "yarn@4.9.4+sha512.7b1cb0b62abba6a537b3a2ce00811a843bea02bcf53138581a6ae5b1bf563f734872bd47de49ce32a9ca9dcaff995aa789577ffb16811da7c603dcf69e73750b",
+  "dependencies": {
+    "path": "^0.12.7"
+  }
 }
-
-

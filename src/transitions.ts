@@ -1,64 +1,79 @@
 import { StackMovement, TransitionsLine } from "./types";
-import { AlphabetSymbols, States, Z } from "./language";
-import { Epsilon } from "./constants";
-
-export const textLine: (AlphabetSymbols | typeof Epsilon)[] = [
-  AlphabetSymbols.zero,
-  AlphabetSymbols.zero,
-  AlphabetSymbols.one,
-  AlphabetSymbols.one,
-  Epsilon,
-];
+import { AlphabetSymbols, EndState, States, Z } from "./language";
+import { Lambda } from "./constants";
 
 export const transitions: TransitionsLine = [
-  // δ(q₀,0,Z)={(q₀,0Z)}
+  // δ(q₀,a,Z)={(q₀,aZ)}
   {
     from: States.q0,
-    symbolOnLine: AlphabetSymbols.zero,
+    symbolOnLine: AlphabetSymbols.a,
     symbolOnStack: Z,
     endState: States.q0,
     stackMovement: StackMovement.PUSH,
   },
-  // δ(q₀,0,0)={(q₀,00)}
+  // δ(q₀,a,a)={(q₀,aa)}
   {
     from: States.q0,
-    symbolOnLine: AlphabetSymbols.zero,
-    symbolOnStack: AlphabetSymbols.zero,
+    symbolOnLine: AlphabetSymbols.a,
+    symbolOnStack: AlphabetSymbols.a,
     endState: States.q0,
     stackMovement: StackMovement.PUSH,
   },
-  // δ(q₀,1,0)={(q₁,λ)}
+  // δ(q₀,b,a)={(q₁,a)}
   {
     from: States.q0,
-    symbolOnLine: AlphabetSymbols.one,
-    symbolOnStack: AlphabetSymbols.zero,
+    symbolOnLine: AlphabetSymbols.b,
+    symbolOnStack: AlphabetSymbols.a,
     endState: States.q1,
-    stackMovement: StackMovement.POP,
+    stackMovement: StackMovement.NONE,
   },
-  // δ(q₁,1,0)={(q₁,λ)}
+  // δ(q₁,b,a)={(q₁,a)}
   {
     from: States.q1,
-    symbolOnLine: AlphabetSymbols.one,
-    symbolOnStack: AlphabetSymbols.zero,
+    symbolOnLine: AlphabetSymbols.b,
+    symbolOnStack: AlphabetSymbols.a,
     endState: States.q1,
-    stackMovement: StackMovement.POP,
+    stackMovement: StackMovement.NONE,
   },
-  // δ(q₀,λ,Z)={(q₀,λ)}
+  // δ(q₁,c,a)={(q₂,a)}
   {
-    from: States.q0,
-    symbolOnLine: Epsilon,
-    symbolOnStack: Z,
-    endState: States.q0,
+    from: States.q1,
+    symbolOnLine: AlphabetSymbols.c,
+    symbolOnStack: AlphabetSymbols.a,
+    endState: States.q2,
+    stackMovement: StackMovement.NONE,
+  },
+
+  // δ(q₂,c,a)={(q₃,ε)}
+  {
+    from: States.q2,
+    symbolOnLine: AlphabetSymbols.c,
+    symbolOnStack: AlphabetSymbols.a,
+    endState: States.q3,
     stackMovement: StackMovement.POP,
   },
 
-  // δ(q₁,λ,Z)={(q₀,Z)}
   {
-    from: States.q1,
-    symbolOnLine: Epsilon,
+    from: States.q3,
+    symbolOnLine: AlphabetSymbols.c,
+    symbolOnStack: AlphabetSymbols.a,
+    endState: States.q2,
+    stackMovement: StackMovement.NONE,
+  },
+
+  {
+    from: States.q3,
+    symbolOnLine: Lambda,
     symbolOnStack: Z,
-    endState: States.q0,
+    endState: EndState,
+    stackMovement: StackMovement.POP,
+  },
+
+  {
+    from: States.q3,
+    symbolOnLine: AlphabetSymbols.c,
+    symbolOnStack: AlphabetSymbols.a,
+    endState: States.q2,
     stackMovement: StackMovement.NONE,
   },
 ];
-

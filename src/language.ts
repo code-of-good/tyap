@@ -5,18 +5,23 @@ export const Z = "z";
 export enum States {
   q0 = "q0",
   q1 = "q1",
+  q2 = "q2",
+  q3 = "q3",
 }
 
 export enum AlphabetSymbols {
-  zero = "0",
-  one = "1",
+  a = "a",
+  b = "b",
+  c = "c",
 }
-
-export type StackSymbolsType = AlphabetSymbols.zero | typeof Z;
 
 export const StartState = States.q0;
 export const StartStackSymbol = Z;
-export const EndState = States.q0;
+export const EndState = States.q2;
 
-export const StackSybmolsArray: StackSymbolsType[] = [AlphabetSymbols.zero, Z];
-
+export const StackSybmols = [
+  AlphabetSymbols.a,
+  AlphabetSymbols.b,
+  AlphabetSymbols.c,
+  Z,
+] as const;

@@ -1,8 +1,11 @@
+import { join } from "path";
 import { Stack } from "./structures";
-import { textLine, transitions } from "./transitions";
-import { StackMovement, StackSymbolsType } from "./types";
-import { StartState } from "./language";
+import { transitions } from "./transitions";
+import { StackMovement, StackSymbolsType, Transition } from "./types";
+import { StartState, AlphabetSymbols, Z } from "./language";
 import { isStackSymbol, isSymbol } from "./utils";
+import { readFileSync } from "fs";
+import { Lambda } from "./constants";
 
 type MovementsObjectInterface = Record<StackMovement, any>;
 
@@ -25,21 +28,22 @@ const main = () => {
     },
   };
 
-  const line = [...textLine];
-  let i = 0;
-  while (i < line.length) {
-    const symbol = line[i];
-
+  // Читаем текст из файла
+  const textFilePath = join(process.cwd(), "src", "text.txt");
+  const textContent = readFileSync(textFilePath, "utf-8").trim();
+  // Преобразуем строку в массив символов
+  const line: string[] = [...textContent.split(""), Lambda];
+  for (const symbol of line) {
     const stateNow = transitions.find(
       ({ from, symbolOnLine, symbolOnStack }) =>
         from === currentState &&
         symbolOnLine === symbol &&
-        stack.getTop() === symbolOnStack
+        stack.peek() === symbolOnStack
     );
 
     if (!stateNow) {
       console.log(
-        `Ошибка в символе  ${i} - ${symbol}, нет перехода, удовлетворяющего состоянию и символу, завершаем программу`
+        `Ошибка в символе  ${symbol}, нет перехода, удовлетворяющего состоянию и символу, завершаем программу`
       );
       return;
     }
@@ -54,16 +58,13 @@ const main = () => {
 
     movementMethods[stateNow.stackMovement](stateNow.symbolOnLine);
 
-    if (stateNow.stackMovement !== StackMovement.NONE) {
-      i++;
-    }
     currentState = stateNow.endState;
   }
   console.log(
     "Программа завершена успешно, длина стека: ",
     stack.getStackText().length
   );
+  console.log("Стек: ", stack.getStackText() || "Стек пуст");
 };
 
 main();
-
