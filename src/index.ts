@@ -2,7 +2,13 @@ import { join } from "path";
 import { Stack } from "./structures";
 import { transitions } from "./transitions";
 import { StackMovement, Transition, TupleToUnion } from "./types";
-import { StartState, AlphabetSymbols, Z, StackSybmols } from "./language";
+import {
+  StartState,
+  AlphabetSymbols,
+  Z,
+  StackSybmols,
+  EndState,
+} from "./language";
 import { isStackSymbol, isSymbol } from "./utils";
 import { readFileSync } from "fs";
 import { Lambda } from "./constants";
@@ -32,9 +38,23 @@ const main = () => {
   const textFilePath = join(process.cwd(), "src", "text.txt");
   const textContent = readFileSync(textFilePath, "utf-8").trim();
   // Преобразуем строку в массив символов
-  const line: string[] = [...textContent.split(""), Lambda];
+  const line: string[] = [...textContent.split("")];
   let position = 0;
-  for (const symbol of line) {
+  let transitionsCount = 0;
+
+  while (true) {
+    const symbol = line[position] || Lambda;
+
+    if (transitionsCount > line.length + 50) {
+      console.log(`Ошибка - программа зациклилась`);
+      return;
+    }
+
+    if (position === line.length && currentState === EndState) {
+      console.log("Строка ПРИНЯТА. Финальное состояние является принимающим.");
+      return;
+    }
+
     const stateNow = transitions.find(
       ({ from, symbolOnLine, symbolOnStack }) =>
         from === currentState &&
@@ -55,19 +75,21 @@ const main = () => {
       isSymbol(stateNow.symbolOnLine) &&
       !isStackSymbol(stateNow.symbolOnLine)
     ) {
+      console.log(
+        `Текущее состояние: ${currentState}, текущий символ: ${symbol}, текущий символ на стеке: ${stack.peek()}, позиция в строке: ${position}`,
+        `Ошибка - обнаружен символ, пытаются положить в стек, но он не попадает под алфавит стека`
+      );
       return;
     }
 
+    transitionsCount++;
     movementMethods[stateNow.stackMovement](stateNow.symbolOnLine);
 
     currentState = stateNow.endState;
-    position++;
+    if (symbol !== Lambda) {
+      position++;
+    }
   }
-  console.log(
-    "Программа завершена успешно, длина стека: ",
-    stack.getStackText().length
-  );
-  console.log("Стек: ", stack.getStackText() || "Стек пуст");
 };
 
 main();
