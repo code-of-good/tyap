@@ -2,7 +2,7 @@ import { join } from "path";
 import { Stack } from "./structures";
 import { transitions } from "./transitions";
 import { StackMovement, TupleToUnion } from "./types";
-import { StartState, StackSybmols, EndState } from "./language";
+import { StartState, StackSybmols, EndStates } from "./language";
 import { isStackSymbol, isSymbol } from "./utils";
 import { readFileSync } from "fs";
 import { Lambda } from "./constants";
@@ -42,7 +42,11 @@ const main = () => {
       return;
     }
 
-    if (position === line.length && currentState === EndState) {
+    if (
+      position === line.length &&
+      EndStates.includes(currentState as TupleToUnion<typeof EndStates>) &&
+      stack.isEmpty()
+    ) {
       console.log("Строка ПРИНЯТА. Финальное состояние является принимающим.");
       return;
     }

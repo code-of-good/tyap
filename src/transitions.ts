@@ -1,5 +1,5 @@
 import { Lambda, Z } from "./constants";
-import { AlphabetSymbols, EndState, States } from "./language";
+import { AlphabetSymbols, EndStates, States } from "./language";
 import { StackMovement, Transition } from "./types";
 
 export const transitions: Transition[] = [
@@ -35,14 +35,14 @@ export const transitions: Transition[] = [
     from: States.q1,
     symbolOnLine: Lambda,
     symbolOnStack: Z,
-    endState: EndState,
+    endState: States.qf,
     stackMovement: StackMovement.POP,
   },
   {
     from: States.q0,
     symbolOnLine: Lambda,
     symbolOnStack: Z,
-    endState: EndState,
+    endState: States.qf,
     stackMovement: StackMovement.POP,
   },
 ];

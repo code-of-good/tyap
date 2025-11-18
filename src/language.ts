@@ -1,6 +1,6 @@
-// Определение языка L={0^n 1^n | n≥0}
-
 import { Z } from "./constants";
+
+// str rule a^n b^n
 
 export enum States {
   q0 = "q0",
@@ -15,6 +15,6 @@ export enum AlphabetSymbols {
 
 export const StartState = States.q0;
 export const StartStackSymbol = Z;
-export const EndState = States.qf;
+export const EndStates = [States.qf] as const;
 
 export const StackSybmols = [AlphabetSymbols.a, AlphabetSymbols.b, Z] as const;
