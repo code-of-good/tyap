@@ -1,5 +1,5 @@
-import { Lambda } from "./constants";
-import { AlphabetSymbols, EndState, States, Z } from "./language";
+import { Lambda, Z } from "./constants";
+import { AlphabetSymbols, EndState, States } from "./language";
 import { StackMovement, Transition } from "./types";
 
 export const transitions: Transition[] = [

@@ -1,14 +1,8 @@
 import { join } from "path";
 import { Stack } from "./structures";
 import { transitions } from "./transitions";
-import { StackMovement, Transition, TupleToUnion } from "./types";
-import {
-  StartState,
-  AlphabetSymbols,
-  Z,
-  StackSybmols,
-  EndState,
-} from "./language";
+import { StackMovement, TupleToUnion } from "./types";
+import { StartState, StackSybmols, EndState } from "./language";
 import { isStackSymbol, isSymbol } from "./utils";
 import { readFileSync } from "fs";
 import { Lambda } from "./constants";
@@ -34,11 +28,9 @@ const main = () => {
     },
   };
 
-  // Читаем текст из файла
   const textFilePath = join(process.cwd(), "src", "text.txt");
-  const textContent = readFileSync(textFilePath, "utf-8").trim();
-  // Преобразуем строку в массив символов
-  const line: string[] = [...textContent.split("")];
+  const line: string[] = readFileSync(textFilePath, "utf-8").trim().split("");
+
   let position = 0;
   let transitionsCount = 0;
 

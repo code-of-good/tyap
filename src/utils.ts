@@ -1,5 +1,5 @@
-import { AlphabetSymbols, Z, StackSybmols } from "./language";
-import { Lambda } from "./constants";
+import { AlphabetSymbols, StackSybmols } from "./language";
+import { Lambda, Z } from "./constants";
 import { TupleToUnion } from "./types";
 
 export const isStackSymbol = (symbol: AlphabetSymbols): boolean => {

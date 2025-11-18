@@ -1,5 +1,5 @@
-import { Lambda } from "./constants";
-import { Z, States, AlphabetSymbols, StackSybmols } from "./language";
+import { Lambda, Z } from "./constants";
+import { States, AlphabetSymbols, StackSybmols } from "./language";
 
 export enum StackMovement {
   POP = "POP",

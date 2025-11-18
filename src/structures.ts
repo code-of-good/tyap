@@ -1,5 +1,6 @@
-import { StackSybmols, Z } from "./language";
+import { StackSybmols } from "./language";
 import { TupleToUnion } from "./types";
+import { Z } from "./constants";
 
 export class Stack {
   private items: TupleToUnion<typeof StackSybmols>[] = [Z];

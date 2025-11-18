@@ -1,12 +1,11 @@
 // Определение языка L={0^n 1^n | n≥0}
 
-export const Z = "z";
+import { Z } from "./constants";
 
 export enum States {
   q0 = "q0",
   q1 = "q1",
-  q2 = "q2",
-  q3 = "q3",
+  qf = "qf",
 }
 
 export enum AlphabetSymbols {
@@ -16,6 +15,6 @@ export enum AlphabetSymbols {
 
 export const StartState = States.q0;
 export const StartStackSymbol = Z;
-export const EndState = States.q1;
+export const EndState = States.qf;
 
 export const StackSybmols = [AlphabetSymbols.a, AlphabetSymbols.b, Z] as const;
