@@ -11,10 +11,18 @@ export enum States {
   qf = "qf",
 }
 
+// Входной алфавит
 export enum AlphabetSymbols {
   a = "a",
   b = "b",
   c = "c",
+}
+
+// Выходной алфавит (можно настроить под свои нужды)
+export enum OutputSymbols {
+  x = "x",
+  y = "y",
+  w = "w",
 }
 
 export const StartState = States.q0;
@@ -22,3 +30,4 @@ export const StartStackSymbol = Z;
 export const EndStates = [States.qf] as const;
 
 export const StackSybmols = [AlphabetSymbols.a, AlphabetSymbols.b, Z] as const;
+export const OutputAlphabet = [OutputSymbols.x, OutputSymbols.y, OutputSymbols.w] as const;
