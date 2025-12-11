@@ -8,7 +8,7 @@
 //   a+b*c   → abc*+
 
 import { StackMovement, Transition } from "../types";
-import { Lambda, Z, Any } from "../constants";
+import { Lambda, Z, Any, Popped } from "../constants";
 
 const operands = [
   "a",
@@ -87,7 +87,8 @@ const transitions: Transition[] = [
         symbolOnLine: ")",
         symbolOnStack: op,
         endState: "q_paren",
-        stackMovement: StackMovement.POP_OUTPUT,
+        stackMovement: StackMovement.POP,
+        output: Popped,
       } as Transition)
   ),
 
@@ -106,7 +107,8 @@ const transitions: Transition[] = [
         symbolOnLine: Lambda,
         symbolOnStack: op,
         endState: "q_paren",
-        stackMovement: StackMovement.POP_OUTPUT,
+        stackMovement: StackMovement.POP,
+        output: Popped,
       } as Transition)
   ),
 
@@ -152,14 +154,16 @@ const transitions: Transition[] = [
       symbolOnLine: "+",
       symbolOnStack: stackOp,
       endState: "q_pop_plus",
-      stackMovement: StackMovement.POP_OUTPUT,
+      stackMovement: StackMovement.POP,
+      output: Popped,
     } as Transition,
     {
       from: "q1",
       symbolOnLine: "-",
       symbolOnStack: stackOp,
       endState: "q_pop_minus",
-      stackMovement: StackMovement.POP_OUTPUT,
+      stackMovement: StackMovement.POP,
+      output: Popped,
     } as Transition,
   ]),
 
@@ -187,7 +191,8 @@ const transitions: Transition[] = [
         symbolOnLine: Lambda,
         symbolOnStack: op,
         endState: "q_pop_plus",
-        stackMovement: StackMovement.POP_OUTPUT,
+        stackMovement: StackMovement.POP,
+        output: Popped,
       } as Transition)
   ),
 
@@ -214,7 +219,8 @@ const transitions: Transition[] = [
         symbolOnLine: Lambda,
         symbolOnStack: op,
         endState: "q_pop_minus",
-        stackMovement: StackMovement.POP_OUTPUT,
+        stackMovement: StackMovement.POP,
+        output: Popped,
       } as Transition)
   ),
 
@@ -266,14 +272,16 @@ const transitions: Transition[] = [
         symbolOnLine: "*",
         symbolOnStack: stackOp,
         endState: "q_pop_mul",
-        stackMovement: StackMovement.POP_OUTPUT,
+        stackMovement: StackMovement.POP,
+        output: Popped,
       } as Transition,
       {
         from: "q1",
         symbolOnLine: "/",
         symbolOnStack: stackOp,
         endState: "q_pop_div",
-        stackMovement: StackMovement.POP_OUTPUT,
+        stackMovement: StackMovement.POP,
+        output: Popped,
       } as Transition,
     ]),
 
@@ -322,7 +330,8 @@ const transitions: Transition[] = [
               symbolOnLine: Lambda,
               symbolOnStack: stackOp,
               endState: state,
-              stackMovement: StackMovement.POP_OUTPUT,
+              stackMovement: StackMovement.POP,
+              output: Popped,
             } as Transition)
         ),
     ];
@@ -343,7 +352,8 @@ const transitions: Transition[] = [
         symbolOnLine: Lambda,
         symbolOnStack: op,
         endState: "q1",
-        stackMovement: StackMovement.POP_OUTPUT,
+        stackMovement: StackMovement.POP,
+        output: Popped,
       } as Transition)
   ),
 ];

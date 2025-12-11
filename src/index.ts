@@ -2,7 +2,7 @@ import { join } from "path";
 import { Stack } from "./structures";
 import { StackMovement, Transition } from "./types";
 import { readFileSync } from "fs";
-import { Lambda, Epsilon, Z, Any, EmptySet } from "./constants";
+import { Lambda, Epsilon, Z, Any, EmptySet, Popped } from "./constants";
 
 interface TransducerConfig {
   transitions: Transition[];
@@ -175,25 +175,26 @@ const executeTransition = (
       }
       break;
 
-    case StackMovement.POP_OUTPUT:
-      poppedSymbol = stack.pop();
-      if (poppedSymbol && poppedSymbol !== Z) {
-        outputTape.push(poppedSymbol);
-      }
-      break;
-
     case StackMovement.NONE:
       break;
   }
 
-  // Записываем литеральный выход (если есть и не ε)
+  // Записываем выход
   if (transition.output && transition.output !== Epsilon) {
-    outputTape.push(transition.output);
+    if (transition.output === Popped) {
+      // Выводим снятый символ (если он есть и не Z)
+      if (poppedSymbol && poppedSymbol !== Z) {
+        outputTape.push(poppedSymbol);
+      }
+    } else {
+      // Выводим литеральный символ
+      outputTape.push(transition.output);
+    }
   }
 
   // Логируем переход
   const outputStr =
-    transition.stackMovement === StackMovement.POP_OUTPUT
+    transition.output === Popped && poppedSymbol
       ? `→выход:${poppedSymbol}`
       : transition.output && transition.output !== Epsilon
       ? `→выход:${transition.output}`
