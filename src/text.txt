@@ -1,1 +1,1 @@
-abccaa
+(a+b)*c

@@ -1,112 +1,229 @@
 import { join } from "path";
 import { Stack } from "./structures";
-import { transitions } from "./transitions";
-import { StackMovement, TupleToUnion } from "./types";
-import { StartState, StackSybmols, EndStates } from "./language";
-import { isStackSymbol, isSymbol } from "./utils";
+import { StackMovement, Transition } from "./types";
 import { readFileSync } from "fs";
-import { Lambda, Epsilon } from "./constants";
+import { Lambda, Epsilon, Z, Any } from "./constants";
 
-type MovementsObjectInterface = Record<StackMovement, any>;
+interface TransducerConfig {
+  transitions: Transition[];
+  startState: string;
+  endStates: string[];
+  // Если true — принимаем только при пустом стеке
+  acceptOnEmptyStack?: boolean;
+}
 
-const main = () => {
-  // Заведем стек, что бы класть туда наши символы
+export const runTransducer = (
+  input: string,
+  config: TransducerConfig
+): string | null => {
+  const {
+    transitions,
+    startState,
+    endStates,
+    acceptOnEmptyStack = true,
+  } = config;
+
   const stack = new Stack();
-
-  let currentState = StartState;
-
-  // Выходная лента преобразователя
+  let currentState = startState;
   const outputTape: string[] = [];
-
-  // Тут делаем методы для движения, что обрабатывать события в стеке
-  const movementMethods: MovementsObjectInterface = {
-    [StackMovement.POP]: () => stack.pop(),
-    [StackMovement.PUSH]: (val: TupleToUnion<typeof StackSybmols>) => {
-      stack.push(val);
-    },
-    [StackMovement.NONE]: () => {},
-    [StackMovement.REPLACE]: (val: TupleToUnion<typeof StackSybmols>) => {
-      stack.pop();
-      stack.push(val);
-    },
-  };
-
-  const textFilePath = join(process.cwd(), "src", "text.txt");
-  const line: string[] = readFileSync(textFilePath, "utf-8").trim().split("");
-
-  console.log(`Входная строка: ${line.join("")}`);
-  console.log("---");
+  const line = input.split("");
 
   let position = 0;
   let transitionsCount = 0;
+  const maxTransitions = line.length * 10 + 100;
+
+  console.log(`Входная строка: "${input}"`);
+  console.log(`Начальное состояние: ${startState}`);
+  console.log("---");
 
   while (true) {
-    const symbol = line[position] || Lambda;
+    const symbol = line[position] ?? Lambda;
+    const stackTop = stack.peek() ?? "";
 
-    if (transitionsCount > line.length + 50) {
-      console.log(`Ошибка - программа зациклилась`);
+    // Защита от зацикливания
+    if (transitionsCount > maxTransitions) {
+      console.log(`❌ Ошибка — программа зациклилась`);
       console.log(`Частичный выход: ${outputTape.join("")}`);
-      return;
+      return null;
     }
 
-    if (
-      position === line.length &&
-      EndStates.includes(currentState as TupleToUnion<typeof EndStates>) &&
-      stack.isEmpty()
-    ) {
-      console.log("Строка ПРИНЯТА. Финальное состояние является принимающим.");
-      console.log(`Выходная строка: ${outputTape.join("")}`);
-      return;
+    // Проверка условия принятия
+    const inputConsumed = position >= line.length;
+    const inFinalState = endStates.includes(currentState);
+    const stackEmpty = stack.isEmpty() || stack.peek() === Z;
+
+    if (inputConsumed && inFinalState && (!acceptOnEmptyStack || stackEmpty)) {
+      // Перед завершением проверяем, есть ли λ-переходы из текущего состояния
+      const lambdaTransition = findTransition(
+        transitions,
+        currentState,
+        Lambda,
+        stackTop
+      );
+      if (!lambdaTransition) {
+        console.log("---");
+        console.log("✅ Строка ПРИНЯТА.");
+        console.log(`Выходная строка: "${outputTape.join("")}"`);
+        return outputTape.join("");
+      }
     }
 
-    const stateNow = transitions.find(
-      ({ from, symbolOnLine, symbolOnStack }) =>
-        from === currentState &&
-        symbolOnLine === symbol &&
-        stack.peek() === symbolOnStack
+    // Ищем подходящий переход
+    const transition = findTransition(
+      transitions,
+      currentState,
+      symbol,
+      stackTop
     );
 
-    if (!stateNow) {
+    if (!transition) {
+      // Пробуем λ-переход
+      const lambdaTransition = findTransition(
+        transitions,
+        currentState,
+        Lambda,
+        stackTop
+      );
+
+      if (lambdaTransition) {
+        executeTransition(
+          lambdaTransition,
+          stack,
+          outputTape,
+          currentState,
+          Lambda
+        );
+        currentState = lambdaTransition.endState;
+        transitionsCount++;
+        continue;
+      }
+
       console.log(
-        `Текущее состояние: ${currentState}, текущий символ: ${symbol}, текущий символ на стеке: ${stack.peek()}, позиция в строке: ${position}`,
-        `\nОшибка в символе ${symbol}, нет перехода, удовлетворяющего состоянию и символу, завершаем программу`
+        `❌ Нет перехода: состояние=${currentState}, символ="${symbol}", стек=[${stack
+          .getItems()
+          .join(", ")}]`
       );
       console.log(`Частичный выход: ${outputTape.join("")}`);
-      return;
+      return null;
     }
 
-    if (
-      stateNow.stackMovement === StackMovement.PUSH &&
-      isSymbol(stateNow.symbolOnLine) &&
-      !isStackSymbol(stateNow.symbolOnLine)
-    ) {
-      console.log(
-        `Текущее состояние: ${currentState}, текущий символ: ${symbol}, текущий символ на стеке: ${stack.peek()}, позиция в строке: ${position}`,
-        `\nОшибка - обнаружен символ, пытаются положить в стек, но он не попадает под алфавит стека`
-      );
-      console.log(`Частичный выход: ${outputTape.join("")}`);
-      return;
-    }
+    executeTransition(transition, stack, outputTape, currentState, symbol);
+    currentState = transition.endState;
 
-    // Записываем выходной символ на выходную ленту (если не ε)
-    if (stateNow.output !== Epsilon) {
-      outputTape.push(stateNow.output);
-    }
-
-    // Логируем переход
-    console.log(
-      `(${currentState}, ${symbol}, ${stack.peek()}) → (${stateNow.endState}, ${
-        stateNow.stackMovement
-      }, выход: ${stateNow.output})`
-    );
-
-    transitionsCount++;
-    movementMethods[stateNow.stackMovement](stateNow.symbolOnLine);
-
-    currentState = stateNow.endState;
-    if (symbol !== Lambda) {
+    // Сдвигаем позицию только если читали реальный символ (не λ)
+    if (transition.symbolOnLine !== Lambda) {
       position++;
     }
+
+    transitionsCount++;
+  }
+};
+
+// Поиск перехода с учётом wildcard (Any)
+const findTransition = (
+  transitions: Transition[],
+  state: string,
+  symbol: string,
+  stackTop: string
+): Transition | undefined => {
+  // Сначала ищем точное совпадение
+  let found = transitions.find(
+    (t) =>
+      t.from === state &&
+      t.symbolOnLine === symbol &&
+      t.symbolOnStack === stackTop
+  );
+
+  if (found) return found;
+
+  // Потом ищем с wildcard на стеке
+  found = transitions.find(
+    (t) =>
+      t.from === state && t.symbolOnLine === symbol && t.symbolOnStack === Any
+  );
+
+  return found;
+};
+
+// Выполнение перехода
+const executeTransition = (
+  transition: Transition,
+  stack: Stack,
+  outputTape: string[],
+  fromState: string,
+  symbol: string
+): void => {
+  const stackBefore = stack.peek() ?? "∅";
+  let poppedSymbol: string | undefined;
+
+  // Операция со стеком
+  switch (transition.stackMovement) {
+    case StackMovement.POP:
+      poppedSymbol = stack.pop();
+      break;
+
+    case StackMovement.PUSH:
+      if (transition.symbolToPush) {
+        stack.push(transition.symbolToPush);
+      }
+      break;
+
+    case StackMovement.REPLACE:
+      stack.pop();
+      if (transition.symbolToPush) {
+        stack.push(transition.symbolToPush);
+      }
+      break;
+
+    case StackMovement.POP_OUTPUT:
+      poppedSymbol = stack.pop();
+      if (poppedSymbol && poppedSymbol !== Z) {
+        outputTape.push(poppedSymbol);
+      }
+      break;
+
+    case StackMovement.NONE:
+      break;
+  }
+
+  // Записываем литеральный выход (если есть и не ε)
+  if (transition.output && transition.output !== Epsilon) {
+    outputTape.push(transition.output);
+  }
+
+  // Логируем переход
+  const outputStr =
+    transition.stackMovement === StackMovement.POP_OUTPUT
+      ? `→выход:${poppedSymbol}`
+      : transition.output && transition.output !== Epsilon
+      ? `→выход:${transition.output}`
+      : "";
+
+  console.log(
+    `(${fromState}, "${symbol === Lambda ? "λ" : symbol}", ${stackBefore}) → ` +
+      `(${transition.endState}, ${transition.stackMovement}${
+        transition.symbolToPush ? `:${transition.symbolToPush}` : ""
+      }) ${outputStr}`
+  );
+};
+
+// Для обратной совместимости — загрузка из файла
+const main = () => {
+  // Динамический импорт конфигурации
+  const configPath = process.argv[2] || "infix-to-rpn";
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const config = require(`./examples/${configPath}`);
+
+    const textFilePath = join(process.cwd(), "src", "text.txt");
+    const input = readFileSync(textFilePath, "utf-8").trim();
+
+    console.log(`\n=== МП-преобразователь: ${configPath} ===\n`);
+    runTransducer(input, config.default || config);
+  } catch (e) {
+    console.error(`Не удалось загрузить конфигурацию: ${configPath}`);
+    console.error(e);
   }
 };
 
