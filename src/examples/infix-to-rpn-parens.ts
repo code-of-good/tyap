@@ -25,6 +25,40 @@ const operands = [
 ] as const;
 
 const operators = ["+", "-", "*", "/"] as const;
+const highPriorityOps = ["*", "/"] as const;
+const lowPriorityStackSymbols = [Z, "("] as const;
+
+// Helper: генерация переходов для оператора с выталкиванием
+const createPopStateTransitions = (
+  stateName: string,
+  operator: string,
+  stackSymbols: readonly string[]
+): Transition[] => [
+  // Кладем оператор если дошли до Z или (
+  ...lowPriorityStackSymbols.map(
+    (sym) =>
+      ({
+        from: stateName,
+        symbolOnLine: Lambda,
+        symbolOnStack: sym,
+        endState: "q0",
+        stackMovement: StackMovement.PUSH,
+        symbolToPush: operator,
+      } as Transition)
+  ),
+  // Продолжаем выталкивать указанные операторы
+  ...stackSymbols.map(
+    (op) =>
+      ({
+        from: stateName,
+        symbolOnLine: Lambda,
+        symbolOnStack: op,
+        endState: stateName,
+        stackMovement: StackMovement.POP,
+        output: Popped,
+      } as Transition)
+  ),
+];
 
 const transitions: Transition[] = [
   // --- Чтение операндов: сразу на выход ---
@@ -114,38 +148,19 @@ const transitions: Transition[] = [
 
   // --- Операторы + и - (низкий приоритет) ---
   // Если на стеке Z или ( — просто кладём
-  {
-    from: "q1",
-    symbolOnLine: "+",
-    symbolOnStack: Z,
-    endState: "q0",
-    stackMovement: StackMovement.PUSH,
-    symbolToPush: "+",
-  },
-  {
-    from: "q1",
-    symbolOnLine: "-",
-    symbolOnStack: Z,
-    endState: "q0",
-    stackMovement: StackMovement.PUSH,
-    symbolToPush: "-",
-  },
-  {
-    from: "q1",
-    symbolOnLine: "+",
-    symbolOnStack: "(",
-    endState: "q0",
-    stackMovement: StackMovement.PUSH,
-    symbolToPush: "+",
-  },
-  {
-    from: "q1",
-    symbolOnLine: "-",
-    symbolOnStack: "(",
-    endState: "q0",
-    stackMovement: StackMovement.PUSH,
-    symbolToPush: "-",
-  },
+  ...["+", "-"].flatMap((op) =>
+    lowPriorityStackSymbols.map(
+      (sym) =>
+        ({
+          from: "q1",
+          symbolOnLine: op,
+          symbolOnStack: sym,
+          endState: "q0",
+          stackMovement: StackMovement.PUSH,
+          symbolToPush: op,
+        } as Transition)
+    )
+  ),
 
   // + и - выталкивают любые операторы
   ...operators.flatMap((stackOp) => [
@@ -168,174 +183,59 @@ const transitions: Transition[] = [
   ]),
 
   // Состояния выталкивания для + и -
-  {
-    from: "q_pop_plus",
-    symbolOnLine: Lambda,
-    symbolOnStack: Z,
-    endState: "q0",
-    stackMovement: StackMovement.PUSH,
-    symbolToPush: "+",
-  },
-  {
-    from: "q_pop_plus",
-    symbolOnLine: Lambda,
-    symbolOnStack: "(",
-    endState: "q0",
-    stackMovement: StackMovement.PUSH,
-    symbolToPush: "+",
-  },
-  ...operators.map(
-    (op) =>
-      ({
-        from: "q_pop_plus",
-        symbolOnLine: Lambda,
-        symbolOnStack: op,
-        endState: "q_pop_plus",
-        stackMovement: StackMovement.POP,
-        output: Popped,
-      } as Transition)
-  ),
-
-  {
-    from: "q_pop_minus",
-    symbolOnLine: Lambda,
-    symbolOnStack: Z,
-    endState: "q0",
-    stackMovement: StackMovement.PUSH,
-    symbolToPush: "-",
-  },
-  {
-    from: "q_pop_minus",
-    symbolOnLine: Lambda,
-    symbolOnStack: "(",
-    endState: "q0",
-    stackMovement: StackMovement.PUSH,
-    symbolToPush: "-",
-  },
-  ...operators.map(
-    (op) =>
-      ({
-        from: "q_pop_minus",
-        symbolOnLine: Lambda,
-        symbolOnStack: op,
-        endState: "q_pop_minus",
-        stackMovement: StackMovement.POP,
-        output: Popped,
-      } as Transition)
-  ),
+  ...createPopStateTransitions("q_pop_plus", "+", operators),
+  ...createPopStateTransitions("q_pop_minus", "-", operators),
 
   // --- Операторы * и / (высокий приоритет) ---
   // Кладём если на стеке Z, (, + или -
-  ...operators
-    .filter((op) => op === "*" || op === "/")
-    .flatMap((op) => [
-      {
-        from: "q1",
-        symbolOnLine: op,
-        symbolOnStack: Z,
-        endState: "q0",
-        stackMovement: StackMovement.PUSH,
-        symbolToPush: op,
-      } as Transition,
-      {
-        from: "q1",
-        symbolOnLine: op,
-        symbolOnStack: "(",
-        endState: "q0",
-        stackMovement: StackMovement.PUSH,
-        symbolToPush: op,
-      } as Transition,
-      {
-        from: "q1",
-        symbolOnLine: op,
-        symbolOnStack: "+",
-        endState: "q0",
-        stackMovement: StackMovement.PUSH,
-        symbolToPush: op,
-      } as Transition,
-      {
-        from: "q1",
-        symbolOnLine: op,
-        symbolOnStack: "-",
-        endState: "q0",
-        stackMovement: StackMovement.PUSH,
-        symbolToPush: op,
-      } as Transition,
-    ]),
+  ...highPriorityOps.flatMap((op) => [
+    ...lowPriorityStackSymbols.map(
+      (sym) =>
+        ({
+          from: "q1",
+          symbolOnLine: op,
+          symbolOnStack: sym,
+          endState: "q0",
+          stackMovement: StackMovement.PUSH,
+          symbolToPush: op,
+        } as Transition)
+    ),
+    ...["+", "-"].map(
+      (sym) =>
+        ({
+          from: "q1",
+          symbolOnLine: op,
+          symbolOnStack: sym,
+          endState: "q0",
+          stackMovement: StackMovement.PUSH,
+          symbolToPush: op,
+        } as Transition)
+    ),
+  ]),
 
   // * и / выталкивают только * и /
-  ...operators
-    .filter((op) => op === "*" || op === "/")
-    .flatMap((stackOp) => [
-      {
-        from: "q1",
-        symbolOnLine: "*",
-        symbolOnStack: stackOp,
-        endState: "q_pop_mul",
-        stackMovement: StackMovement.POP,
-        output: Popped,
-      } as Transition,
-      {
-        from: "q1",
-        symbolOnLine: "/",
-        symbolOnStack: stackOp,
-        endState: "q_pop_div",
-        stackMovement: StackMovement.POP,
-        output: Popped,
-      } as Transition,
-    ]),
+  ...highPriorityOps.flatMap((stackOp) => [
+    {
+      from: "q1",
+      symbolOnLine: "*",
+      symbolOnStack: stackOp,
+      endState: "q_pop_mul",
+      stackMovement: StackMovement.POP,
+      output: Popped,
+    } as Transition,
+    {
+      from: "q1",
+      symbolOnLine: "/",
+      symbolOnStack: stackOp,
+      endState: "q_pop_div",
+      stackMovement: StackMovement.POP,
+      output: Popped,
+    } as Transition,
+  ]),
 
   // Состояния выталкивания для * и /
-  ...["q_pop_mul", "q_pop_div"].flatMap((state, idx) => {
-    const op = idx === 0 ? "*" : "/";
-    return [
-      {
-        from: state,
-        symbolOnLine: Lambda,
-        symbolOnStack: Z,
-        endState: "q0",
-        stackMovement: StackMovement.PUSH,
-        symbolToPush: op,
-      } as Transition,
-      {
-        from: state,
-        symbolOnLine: Lambda,
-        symbolOnStack: "(",
-        endState: "q0",
-        stackMovement: StackMovement.PUSH,
-        symbolToPush: op,
-      } as Transition,
-      {
-        from: state,
-        symbolOnLine: Lambda,
-        symbolOnStack: "+",
-        endState: "q0",
-        stackMovement: StackMovement.PUSH,
-        symbolToPush: op,
-      } as Transition,
-      {
-        from: state,
-        symbolOnLine: Lambda,
-        symbolOnStack: "-",
-        endState: "q0",
-        stackMovement: StackMovement.PUSH,
-        symbolToPush: op,
-      } as Transition,
-      ...operators
-        .filter((op) => op === "*" || op === "/")
-        .map(
-          (stackOp) =>
-            ({
-              from: state,
-              symbolOnLine: Lambda,
-              symbolOnStack: stackOp,
-              endState: state,
-              stackMovement: StackMovement.POP,
-              output: Popped,
-            } as Transition)
-        ),
-    ];
-  }),
+  ...createPopStateTransitions("q_pop_mul", "*", highPriorityOps),
+  ...createPopStateTransitions("q_pop_div", "/", highPriorityOps),
 
   // --- Конец входа: выталкиваем всё со стека ---
   {

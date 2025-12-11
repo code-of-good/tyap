@@ -2,7 +2,7 @@ import { join } from "path";
 import { Stack } from "./structures";
 import { StackMovement, Transition } from "./types";
 import { readFileSync } from "fs";
-import { Lambda, Epsilon, Z, Any, EmptySet, Popped } from "./constants";
+import { Lambda, Z, Any, EmptySet, Popped } from "./constants";
 
 interface TransducerConfig {
   transitions: Transition[];
@@ -161,26 +161,17 @@ const executeTransition = (
     case StackMovement.POP:
       poppedSymbol = stack.pop();
       break;
-
     case StackMovement.PUSH:
       if (transition.symbolToPush) {
         stack.push(transition.symbolToPush);
       }
       break;
-
-    case StackMovement.REPLACE:
-      stack.pop();
-      if (transition.symbolToPush) {
-        stack.push(transition.symbolToPush);
-      }
-      break;
-
     case StackMovement.NONE:
       break;
   }
 
   // Записываем выход
-  if (transition.output && transition.output !== Epsilon) {
+  if (transition.output) {
     if (transition.output === Popped) {
       // Выводим снятый символ (если он есть и не Z)
       if (poppedSymbol && poppedSymbol !== Z) {
@@ -193,12 +184,11 @@ const executeTransition = (
   }
 
   // Логируем переход
-  const outputStr =
-    transition.output === Popped && poppedSymbol
+  const outputStr = transition.output
+    ? transition.output === Popped && poppedSymbol
       ? `→выход:${poppedSymbol}`
-      : transition.output && transition.output !== Epsilon
-      ? `→выход:${transition.output}`
-      : "";
+      : `→выход:${transition.output}`
+    : "";
 
   console.log(
     `(${fromState}, "${symbol === Lambda ? "λ" : symbol}", ${stackBefore}) → ` +
