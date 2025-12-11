@@ -2,7 +2,7 @@ import { join } from "path";
 import { Stack } from "./structures";
 import { StackMovement, Transition } from "./types";
 import { readFileSync } from "fs";
-import { Lambda, Epsilon, Z, Any } from "./constants";
+import { Lambda, Epsilon, Z, Any, EmptySet } from "./constants";
 
 interface TransducerConfig {
   transitions: Transition[];
@@ -153,7 +153,7 @@ const executeTransition = (
   fromState: string,
   symbol: string
 ): void => {
-  const stackBefore = stack.peek() ?? "∅";
+  const stackBefore = stack.peek() ?? EmptySet;
   let poppedSymbol: string | undefined;
 
   // Операция со стеком

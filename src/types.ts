@@ -11,7 +11,7 @@ export enum StackMovement {
 export interface Transition {
   from: string;
   symbolOnLine: string | typeof Lambda; // входной символ или λ
-  symbolOnStack: string | typeof Z | typeof Any; // символ на стеке, Z₀ или * (любой)
+  symbolOnStack: string | typeof Z | typeof Any; // символ на стеке, Z или * (любой)
   endState: string;
   stackMovement: StackMovement;
   symbolToPush?: string; // что класть в стек (для PUSH/REPLACE)

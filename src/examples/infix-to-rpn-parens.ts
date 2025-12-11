@@ -12,30 +12,6 @@ import { Lambda, Z, Any } from "../constants";
 
 const operands = [
   "a",
-  "b",
-  "c",
-  "d",
-  "e",
-  "f",
-  "g",
-  "h",
-  "i",
-  "j",
-  "k",
-  "l",
-  "m",
-  "n",
-  "o",
-  "p",
-  "q",
-  "r",
-  "s",
-  "t",
-  "u",
-  "v",
-  "w",
-  "x",
-  "y",
   "0",
   "1",
   "2",
@@ -46,7 +22,9 @@ const operands = [
   "7",
   "8",
   "9",
-];
+] as const;
+
+const operators = ["+", "-", "*", "/"] as const;
 
 const transitions: Transition[] = [
   // --- Чтение операндов: сразу на выход ---
@@ -102,7 +80,7 @@ const transitions: Transition[] = [
     stackMovement: StackMovement.POP, // удаляем (, не выводим
   },
   // Если на стеке оператор, выталкиваем на выход
-  ...(["+", "-", "*", "/"] as const).map(
+  ...operators.map(
     (op) =>
       ({
         from: "q1",
@@ -121,7 +99,7 @@ const transitions: Transition[] = [
     endState: "q1",
     stackMovement: StackMovement.POP,
   },
-  ...(["+", "-", "*", "/"] as const).map(
+  ...operators.map(
     (op) =>
       ({
         from: "q_paren",
@@ -133,7 +111,7 @@ const transitions: Transition[] = [
   ),
 
   // --- Операторы + и - (низкий приоритет) ---
-  // Если на стеке Z₀ или ( — просто кладём
+  // Если на стеке Z или ( — просто кладём
   {
     from: "q1",
     symbolOnLine: "+",
@@ -168,7 +146,7 @@ const transitions: Transition[] = [
   },
 
   // + и - выталкивают любые операторы
-  ...(["+", "-", "*", "/"] as const).flatMap((stackOp) => [
+  ...operators.flatMap((stackOp) => [
     {
       from: "q1",
       symbolOnLine: "+",
@@ -202,7 +180,7 @@ const transitions: Transition[] = [
     stackMovement: StackMovement.PUSH,
     symbolToPush: "+",
   },
-  ...(["+", "-", "*", "/"] as const).map(
+  ...operators.map(
     (op) =>
       ({
         from: "q_pop_plus",
@@ -229,7 +207,7 @@ const transitions: Transition[] = [
     stackMovement: StackMovement.PUSH,
     symbolToPush: "-",
   },
-  ...(["+", "-", "*", "/"] as const).map(
+  ...operators.map(
     (op) =>
       ({
         from: "q_pop_minus",
@@ -241,59 +219,63 @@ const transitions: Transition[] = [
   ),
 
   // --- Операторы * и / (высокий приоритет) ---
-  // Кладём если на стеке Z₀, (, + или -
-  ...(["*", "/"] as const).flatMap((op) => [
-    {
-      from: "q1",
-      symbolOnLine: op,
-      symbolOnStack: Z,
-      endState: "q0",
-      stackMovement: StackMovement.PUSH,
-      symbolToPush: op,
-    } as Transition,
-    {
-      from: "q1",
-      symbolOnLine: op,
-      symbolOnStack: "(",
-      endState: "q0",
-      stackMovement: StackMovement.PUSH,
-      symbolToPush: op,
-    } as Transition,
-    {
-      from: "q1",
-      symbolOnLine: op,
-      symbolOnStack: "+",
-      endState: "q0",
-      stackMovement: StackMovement.PUSH,
-      symbolToPush: op,
-    } as Transition,
-    {
-      from: "q1",
-      symbolOnLine: op,
-      symbolOnStack: "-",
-      endState: "q0",
-      stackMovement: StackMovement.PUSH,
-      symbolToPush: op,
-    } as Transition,
-  ]),
+  // Кладём если на стеке Z, (, + или -
+  ...operators
+    .filter((op) => op === "*" || op === "/")
+    .flatMap((op) => [
+      {
+        from: "q1",
+        symbolOnLine: op,
+        symbolOnStack: Z,
+        endState: "q0",
+        stackMovement: StackMovement.PUSH,
+        symbolToPush: op,
+      } as Transition,
+      {
+        from: "q1",
+        symbolOnLine: op,
+        symbolOnStack: "(",
+        endState: "q0",
+        stackMovement: StackMovement.PUSH,
+        symbolToPush: op,
+      } as Transition,
+      {
+        from: "q1",
+        symbolOnLine: op,
+        symbolOnStack: "+",
+        endState: "q0",
+        stackMovement: StackMovement.PUSH,
+        symbolToPush: op,
+      } as Transition,
+      {
+        from: "q1",
+        symbolOnLine: op,
+        symbolOnStack: "-",
+        endState: "q0",
+        stackMovement: StackMovement.PUSH,
+        symbolToPush: op,
+      } as Transition,
+    ]),
 
   // * и / выталкивают только * и /
-  ...(["*", "/"] as const).flatMap((stackOp) => [
-    {
-      from: "q1",
-      symbolOnLine: "*",
-      symbolOnStack: stackOp,
-      endState: "q_pop_mul",
-      stackMovement: StackMovement.POP_OUTPUT,
-    } as Transition,
-    {
-      from: "q1",
-      symbolOnLine: "/",
-      symbolOnStack: stackOp,
-      endState: "q_pop_div",
-      stackMovement: StackMovement.POP_OUTPUT,
-    } as Transition,
-  ]),
+  ...operators
+    .filter((op) => op === "*" || op === "/")
+    .flatMap((stackOp) => [
+      {
+        from: "q1",
+        symbolOnLine: "*",
+        symbolOnStack: stackOp,
+        endState: "q_pop_mul",
+        stackMovement: StackMovement.POP_OUTPUT,
+      } as Transition,
+      {
+        from: "q1",
+        symbolOnLine: "/",
+        symbolOnStack: stackOp,
+        endState: "q_pop_div",
+        stackMovement: StackMovement.POP_OUTPUT,
+      } as Transition,
+    ]),
 
   // Состояния выталкивания для * и /
   ...["q_pop_mul", "q_pop_div"].flatMap((state, idx) => {
@@ -331,16 +313,18 @@ const transitions: Transition[] = [
         stackMovement: StackMovement.PUSH,
         symbolToPush: op,
       } as Transition,
-      ...(["*", "/"] as const).map(
-        (stackOp) =>
-          ({
-            from: state,
-            symbolOnLine: Lambda,
-            symbolOnStack: stackOp,
-            endState: state,
-            stackMovement: StackMovement.POP_OUTPUT,
-          } as Transition)
-      ),
+      ...operators
+        .filter((op) => op === "*" || op === "/")
+        .map(
+          (stackOp) =>
+            ({
+              from: state,
+              symbolOnLine: Lambda,
+              symbolOnStack: stackOp,
+              endState: state,
+              stackMovement: StackMovement.POP_OUTPUT,
+            } as Transition)
+        ),
     ];
   }),
 
@@ -352,7 +336,7 @@ const transitions: Transition[] = [
     endState: "qf",
     stackMovement: StackMovement.NONE,
   },
-  ...(["+", "-", "*", "/"] as const).map(
+  ...operators.map(
     (op) =>
       ({
         from: "q1",
